@@ -13,6 +13,7 @@ public class CoinGeckoResponse {
 
     public static class Bitcoin {
         private double usd;
+        private double localizedPrice; // New field for localized price
 
         public double getUsd() {
             return usd;
@@ -20,6 +21,14 @@ public class CoinGeckoResponse {
 
         public void setUsd(double usd) {
             this.usd = usd;
+        }
+
+        public double getLocalizedPrice() {
+            return localizedPrice;
+        }
+
+        public void setLocalizedPrice(double localizedPrice) {
+            this.localizedPrice = localizedPrice;
         }
     }
 }
