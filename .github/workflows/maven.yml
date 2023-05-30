@@ -1,0 +1,44 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: crypto currency converter cicd
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    - name: Set up Cloud SQL Auth proxy
+      run: |
+          echo "${{ secrets.GCP_SA_KEY }}" > /tmp/gcp_sa_key.json
+          chmod 600 /tmp/gcp_sa_key.json
+          ./cloud_sql_proxy -instances=exalted-breaker-388307:us-central1:cloud-sql-currency-converter=tcp:3306 -credential_file=/tmp/gcp_sa_key.json &
+          sleep 5s # Wait for the proxy to start
+
+    - name: Build and deploy Spring Boot application
+      run: |
+          mvn clean package
+          java -jar target/my-application.jar
+
+    - name: Cleanup Cloud SQL Auth proxy
+      run: |
+          pkill cloud_sql_proxy
