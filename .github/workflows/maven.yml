@@ -20,24 +20,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-    - name: Set up Cloud SQL Auth proxy
-      run: |
-          echo "${{ secrets.GCP_SA_KEY }}" > /tmp/gcp_sa_key.json
-          chmod 600 /tmp/gcp_sa_key.json
-          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp_sa_key.json
-          ./cloud_sql_proxy -instances=exalted-breaker-388307:us-central1:cloud-sql-currency-converter=tcp:3306 -credential_file=$GOOGLE_APPLICATION_CREDENTIALS &
-          sleep 5s # Wait for the proxy to start
-    - name: Build and deploy Spring Boot application
-      run: |
-          mvn clean package
-          java -jar target/my-application.jar
-    - name: Cleanup Cloud SQL Auth proxy
-      run: |
-          pkill cloud_sql_proxy
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
+      # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
+      - name: Update dependency graph
+        uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
